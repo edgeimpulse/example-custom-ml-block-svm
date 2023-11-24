@@ -1,0 +1,7 @@
+jax==0.4.1
+#numpy
+numpy==1.23.3
+protobuf==3.20.2
+scikit-learn==1.0.2
+#scikit-learn
+#tflite==2.4.0
