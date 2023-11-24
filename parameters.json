@@ -1,0 +1,7 @@
+[{
+    "name": "Number of training cycles",
+    "value": -1,
+    "type": "int",
+    "help": "Maximum number of iterations taken for the solvers to converge.",
+    "param": "max-iter"
+}]
