@@ -97,10 +97,10 @@ with open(os.path.join(args.out_directory, 'model.pkl'), 'rb') as f:
     if type(clf2) == svm.SVC:
         print('svm.SVC')
 
-print('Converting model...')
-convert_jax(X_train.shape[1:], pred, os.path.join(args.out_directory, 'model.tflite'))
-print('Converting model OK')
-print('')
+# print('Converting model...')
+# convert_jax(X_train.shape[1:], pred, os.path.join(args.out_directory, 'model.tflite'))
+# print('Converting model OK')
+# print('')
 
 print(clf.coef_.shape)
 print(len(clf.classes_))
