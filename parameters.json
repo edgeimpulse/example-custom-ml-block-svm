@@ -3,6 +3,37 @@
     "value": -1,
     "type": "int",
     "help": "Maximum number of iterations taken for the solvers to converge.",
-    "param": "max-iter",
+    "param": "max-iter"
+},{
+    "name": "Kernel",
+    "value": "linear",
+    "type": "select",
+    "help": "Specifies the kernel type to be used in the algorithm.",
+    "param": "kernel",
+    "valid": ["linear", "rbf", "poly"],
+    "section": "advanced"
+},{
+    "name": "Gamma",
+    "type": "float",
+    "help": "Kernel coefficient.",
+    "param": "kernel-coefficient",
+    "showIf": {
+        "parameter": "kernel",
+        "operator": "eq",
+        "value": "rbf"
+    },
+    "value": "0.0",
+    "section": "advanced"
+},{
+    "name": "Coef0",
+    "type": "float",
+    "help": "Independent term in kernel function.",
+    "param": "coef0",
+    "showIf": {
+        "parameter": "kernel",
+        "operator": "eq",
+        "value": "poly"
+    },
+    "value": "0.0",
     "section": "advanced"
 }]

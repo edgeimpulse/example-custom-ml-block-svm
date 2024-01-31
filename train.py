@@ -5,6 +5,7 @@ from sklearn import svm
 from conversion import convert_jax
 import jax.numpy as jnp
 import jax
+import pickle
 
 # Set random seeds for repeatable results
 RANDOM_SEED = 3
@@ -56,18 +57,24 @@ print('')
 
 classes_lt = []
 classes_gt = []
-for class_idx1 in range(5):
-    for class_idx2 in range(5 - class_idx1):
-        classes_lt.append(class_idx1 + class_idx2 + 1)
-        classes_gt.append(class_idx1)
-classes_lt = jnp.array(classes_lt, dtype=np.int32)
-classes_gt = jnp.array(classes_gt, dtype=np.int32)
+for class_idx1 in range(len(clf.classes_) - 1):
+    for class_idx2 in range(len(clf.classes_) - 1 - class_idx1):
+        l = np.zeros(len(clf.classes_), dtype=np.float32)
+        r = np.zeros(len(clf.classes_), dtype=np.float32)
+        l[class_idx1 + class_idx2 + 1] = 1
+        r[class_idx1] = 1
+        classes_lt.append(l)
+        classes_gt.append(r)
+
+classes_lt = jnp.array(classes_lt, dtype=jnp.float32)
+classes_gt = jnp.array(classes_gt, dtype=jnp.float32)
 
 def pred(X):
-    y = jnp.dot(X, clf.coef_.T) + clf.intercept_
-    support_vector_preds = jnp.where(y < 0, classes_lt, classes_gt)
-    class_pred_count = jax.vmap(lambda ix: jnp.count_nonzero(support_vector_preds == ix))(jnp.array(range(6)))
-    return jnp.zeros((6), dtype=np.float32).at[jnp.argmax(class_pred_count)].set(1.0)
+    y = jnp.dot(X[0], clf.coef_.T) + clf.intercept_
+    l = jnp.where((y < 0.0), jnp.array(0, dtype=jnp.float32), jnp.array(1, dtype=jnp.float32)).reshape((clf.coef_.shape[0], 1))
+    r = jnp.where((y >= 0.0), jnp.array(0, dtype=jnp.float32), jnp.array(1, dtype=jnp.float32)).reshape((clf.coef_.shape[0], 1))
+    res = (l * classes_gt) + (r * classes_lt)
+    return jnp.sum(res, axis=0).reshape((1,len(clf.classes_)))
 
 print(' ')
 print('Calculating SVM accuracy...')
@@ -81,7 +88,20 @@ for idx in range(len(Y_test)):
         num_correct += 1
 print(f'Accuracy (validation set): {num_correct / len(Y_test)}')
 
+with open(os.path.join(args.out_directory, 'model.pkl'),'wb') as f:
+    pickle.dump(clf,f)
+
+with open(os.path.join(args.out_directory, 'model.pkl'), 'rb') as f:
+    clf2 = pickle.load(f)
+    print(type(clf2))
+    if type(clf2) == svm.SVC:
+        print('svm.SVC')
+
 print('Converting model...')
 convert_jax(X_train.shape[1:], pred, os.path.join(args.out_directory, 'model.tflite'))
 print('Converting model OK')
 print('')
+
+print(clf.coef_.shape)
+print(len(clf.classes_))
+print(str(vars(clf)))
